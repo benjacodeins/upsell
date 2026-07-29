@@ -237,7 +237,7 @@ export default function CartSimulator({ rules, products = [], onConversion }) {
             </div>
 
             {/* IN-CART UPSELL WIDGET SECTION */}
-            {upsellOffers.length > 0 && (
+            {upsellOffers.length > 0 ? (
               <div className="p-4 bg-gradient-to-b from-indigo-950/80 to-purple-950/60 border-t border-b border-indigo-500/40 relative">
                 <div className="flex items-center justify-between mb-2">
                   <span className="text-xs font-extrabold uppercase tracking-wider text-indigo-300 flex items-center space-x-1">
@@ -263,7 +263,7 @@ export default function CartSimulator({ rules, products = [], onConversion }) {
 
                     <div className="flex space-x-3 pt-1">
                       <img 
-                        src={suggestedProd.image} 
+                        src={suggestedProd.image || 'https://images.unsplash.com/photo-1582735689369-4fe89db7114c?auto=format&fit=crop&w=400&q=80'} 
                         alt={suggestedProd.name} 
                         className="w-14 h-14 rounded-lg object-cover border border-indigo-500/40 flex-shrink-0"
                       />
@@ -294,6 +294,11 @@ export default function CartSimulator({ rules, products = [], onConversion }) {
                     </button>
                   </div>
                 ))}
+              </div>
+            ) : (
+              <div className="p-4 bg-slate-900/60 border-t border-b border-slate-800 text-center text-xs text-slate-400 space-y-1">
+                <p className="font-semibold text-slate-300">Sin ofertas activas para este producto</p>
+                <p className="text-[11px] text-slate-500">Crea una regla en la pestaña <strong>"Reglas de Upsell"</strong> para activar recomendaciones de carrito.</p>
               </div>
             )}
 

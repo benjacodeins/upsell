@@ -1,54 +1,22 @@
-// Store Service para Tienda Nube Store ID 7961682 (Neo Hogar)
-
-export const NEO_HOGAR_PRODUCTS = [
-  {
-    id: 1,
-    name: "SECADOR DE ROPA PORTATIL + 8 PERCHAS DE REGALO",
-    price: 45900,
-    category: "Hogar",
-    image: "https://images.unsplash.com/photo-1582735689369-4fe89db7114c?auto=format&fit=crop&w=400&q=80",
-    sku: "NEO-SEC-01"
-  },
-  {
-    id: 3,
-    name: "ORGANIZADOR DE CALZADO (10 NIVELES)",
-    price: 24500,
-    category: "Organización",
-    image: "https://images.unsplash.com/photo-1544816155-12df9643f363?auto=format&fit=crop&w=400&q=80",
-    sku: "NEO-CALZ-03"
-  }
-];
-
-export const MOCK_PRODUCTS = NEO_HOGAR_PRODUCTS;
-export const DEFAULT_MOCK_PRODUCTS = NEO_HOGAR_PRODUCTS;
+// Store Service para Tienda Nube (Neo Hogar - Store ID 7961682)
 
 export async function fetchRealTiendaNubeProducts() {
   try {
     const res = await fetch('/api/tiendanube/products');
     const data = await res.json();
-    if (data.success && data.products && data.products.length > 0) {
+    if (data.success && data.products) {
       return data.products;
     }
   } catch (e) {
-    console.log('Error fetching products:', e);
+    console.error('Error al consultar productos reales:', e);
   }
-  return NEO_HOGAR_PRODUCTS;
+  return [];
 }
 
-export const DEFAULT_RULES = [
-  {
-    id: "rule-neohogar-1",
-    name: "Combo Hogar: Secador de Ropa + Organizador de Calzado",
-    triggerProductId: 1,
-    suggestedProductId: 3,
-    discountType: "percentage",
-    discountValue: 20,
-    badgeText: "⚡ ¡Aprovecha 20% OFF en tu Organizador de Calzado!",
-    active: true,
-    conversions: 0,
-    revenueBoosted: 0
-  }
-];
+export const MOCK_PRODUCTS = [];
+export const DEFAULT_MOCK_PRODUCTS = [];
+
+export const DEFAULT_RULES = [];
 
 export function getStoredRules() {
   const data = localStorage.getItem("tn_upsell_rules");

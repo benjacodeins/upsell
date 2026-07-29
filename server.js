@@ -13,20 +13,7 @@ app.use(express.json());
 let STORE_ID = process.env.TIENDANUBE_STORE_ID || '7961682';
 let ACCESS_TOKEN = process.env.TIENDANUBE_ACCESS_TOKEN || 'd1b5090a7cec9c055081ab5a6c3d8e5a650ee6d5';
 
-let rulesStore = [
-  {
-    id: "rule-1",
-    name: "Oferta Especial de Carrito",
-    triggerProductId: 101,
-    suggestedProductId: 104,
-    discountType: "percentage",
-    discountValue: 20,
-    badgeText: "⚡ ¡Aprovecha 20% OFF en este complemento!",
-    active: true,
-    conversions: 0,
-    revenueBoosted: 0
-  }
-];
+let rulesStore = [];
 
 // 1. Ruta OAuth Callback (/api/auth/callback)
 app.get('/api/auth/callback', async (req, res) => {
@@ -88,7 +75,7 @@ app.get('/api/tiendanube/products', async (req, res) => {
     });
 
     if (!response.ok) {
-      return res.json({ success: false, storeId: STORE_ID, products: [], source: 'fallback' });
+      return res.json({ success: false, storeId: STORE_ID, products: [] });
     }
 
     const data = await response.json();
@@ -97,7 +84,7 @@ app.get('/api/tiendanube/products', async (req, res) => {
       name: item.name?.es || item.name?.en || (typeof item.name === 'string' ? item.name : 'Producto Tienda Nube'),
       price: parseFloat(item.variants?.[0]?.price || item.price || 0),
       category: item.categories?.[0]?.name?.es || 'Categoría Tienda Nube',
-      image: item.images?.[0]?.src || 'https://images.unsplash.com/photo-1523275335684-37898b6baf30?auto=format&fit=crop&w=400&q=80',
+      image: item.images?.[0]?.src || '',
       sku: item.variants?.[0]?.sku || `TN-${item.id}`
     }));
 
@@ -139,5 +126,5 @@ app.post('/api/rules', (req, res) => {
 });
 
 app.listen(PORT, () => {
-  console.log(`🚀 Servidor backend con callback corriendo en puerto ${PORT}`);
+  console.log(`🚀 Servidor backend Tienda Nube (Store: ${STORE_ID}) corriendo en puerto ${PORT}`);
 });
