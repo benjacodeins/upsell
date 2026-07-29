@@ -6,8 +6,8 @@ export default function handler(req, res) {
 (function() {
   console.log('⚡ [Neo Hogar In-Cart Upsell Active] Store ID: 7961682');
 
-  // Estado global de reglas
-  let activeRules = [];
+  // Estado global de reglas (por defecto activa)
+  let activeRules = [{ active: true }];
 
   // Consultar reglas activas desde la API del servidor
   async function checkActiveRules() {
@@ -15,10 +15,12 @@ export default function handler(req, res) {
       const res = await fetch('https://upsell-gamma-bay.vercel.app/api/rules');
       if (res.ok) {
         const rules = await res.json();
-        activeRules = (rules || []).filter(r => r.active !== false);
+        if (Array.isArray(rules) && rules.length > 0) {
+          activeRules = rules.filter(r => r.active !== false);
+        }
       }
     } catch (e) {
-      // Fallback
+      // Mantener activa
     }
   }
 
