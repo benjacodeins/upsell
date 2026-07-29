@@ -13,7 +13,7 @@ import {
   getStoredCredentials, 
   saveStoredCredentials,
   fetchRealTiendaNubeProducts,
-  DEFAULT_MOCK_PRODUCTS
+  NEO_HOGAR_PRODUCTS
 } from './services/store';
 
 export default function App() {
@@ -21,18 +21,18 @@ export default function App() {
   const [rules, setRules] = useState(getStoredRules);
   const [analytics, setAnalytics] = useState(getStoredAnalytics);
   const [creds, setCreds] = useState(getStoredCredentials);
-  const [products, setProducts] = useState(DEFAULT_MOCK_PRODUCTS);
-  const [loadingProducts, setLoadingProducts] = useState(true);
+  const [products, setProducts] = useState(NEO_HOGAR_PRODUCTS);
 
-  // Sync real products from Tienda Nube
   useEffect(() => {
-    fetchRealTiendaNubeProducts().then(realProds => {
-      setProducts(realProds);
-      setLoadingProducts(false);
-    });
+    fetchRealTiendaNubeProducts()
+      .then(realProds => {
+        if (realProds && realProds.length > 0) {
+          setProducts(realProds);
+        }
+      })
+      .catch(err => console.log('Store products fallback active:', err));
   }, []);
 
-  // Sync state changes with localStorage
   useEffect(() => {
     saveStoredRules(rules);
   }, [rules]);
@@ -105,10 +105,10 @@ export default function App() {
         <div className="max-w-7xl mx-auto px-4 flex flex-col sm:flex-row items-center justify-between gap-3">
           <div className="flex items-center space-x-2">
             <span className="font-bold text-slate-300">Tienda Nube In-Cart Engine</span>
-            <span>• Tienda Conectada ID: {creds.storeId || '8022993'}</span>
+            <span>• Store ID: {creds.storeId || '7961682'}</span>
           </div>
           <div className="flex items-center space-x-4 text-slate-400">
-            <span>OAuth Token Activo</span>
+            <span>Neo Hogar Sync</span>
             <span>•</span>
             <span>Vercel Serverless Ready</span>
           </div>
