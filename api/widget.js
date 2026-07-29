@@ -37,8 +37,10 @@ export default function handler(req, res) {
     // Evitar duplicados si ya está inyectado
     if (document.getElementById('neohogar-upsell-container')) return;
 
-    // Oferta basada en Regla a+b: Secador de Ropa (20% OFF)
-    const OFFER_DATA = {
+    // 1. Detectar qué producto está en el carrito para sugerir el complemento exacto
+    const cartText = (document.body?.innerText || '').toLowerCase();
+    
+    let OFFER_DATA = {
       title: '🔥 OFERTA EXCLUSIVA DE CARRITO',
       badgeText: '⚡ ¡Aprovecha 20% OFF en este complemento!',
       name: 'SECADOR DE ROPA PORTATIL + 8 PERCHAS DE REGALO',
@@ -49,7 +51,21 @@ export default function handler(req, res) {
       image: 'https://dcdn-us.mitiendanube.com/stores/007/961/682/products/principal-72554f7ba3ff08dce817842132500746-480-0.webp'
     };
 
-    // 1. Buscar el botón de checkout dentro del carrito desplegable
+    // Si el carrito o página tiene Secador de Ropa, sugerir el Organizador de Calzado
+    if (cartText.includes('secador')) {
+      OFFER_DATA = {
+        title: '🔥 OFERTA EXCLUSIVA DE CARRITO',
+        badgeText: '⚡ ¡Aprovecha 20% OFF en este complemento!',
+        name: 'ORGANIZADOR DE CALZADO (10 NIVELES)',
+        variantId: '356039203',
+        price: 24500,
+        discountPrice: 19600,
+        savings: 4900,
+        image: 'https://dcdn-us.mitiendanube.com/stores/007/961/682/products/chatgpt-image-24-jul-2026-02_15_30-86b3c39598501e726f17848701552063-480-0.webp'
+      };
+    }
+
+    // 2. Buscar el botón de checkout dentro del carrito desplegable
     let checkoutBtn = document.querySelector([
       '#modal-cart a[href*="checkout"]',
       '#modal-cart a[href*="iniciar-compra"]',
@@ -146,9 +162,9 @@ export default function handler(req, res) {
       btn.style.background = '#10b981';
       btn.disabled = true;
 
-      // Solicitud AJAX sin recargar página
+      // Solicitud AJAX dinámica sin recargar página
       const params = new URLSearchParams();
-      params.append('add_to_cart', '355582153');
+      params.append('add_to_cart', OFFER_DATA.variantId || '355582153');
       params.append('quantity', '1');
 
       fetch('/cart/add', {
@@ -162,7 +178,6 @@ export default function handler(req, res) {
       .then(function() {
         btn.innerText = '✓ ¡AGREGADO CON 20% OFF!';
         btn.style.background = '#059669';
-        // Si el carrito de Tiendanube tiene update dinámico, lo dispara sin recargar la página entera
         if (window.LS && window.LS.cart && typeof window.LS.cart.update === 'function') {
           window.LS.cart.update();
         }
