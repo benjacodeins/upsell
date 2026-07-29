@@ -6,21 +6,46 @@ export default function handler(req, res) {
 (function() {
   console.log('⚡ [Neo Hogar In-Cart Upsell Active] Store ID: 7961682');
 
-  // Oferta basada en Regla a+b: Organizador de Calzado -> Secador de Ropa (20% OFF)
-  const OFFER_DATA = {
-    title: '🔥 OFERTA EXCLUSIVA DE CARRITO',
-    badgeText: '⚡ ¡Aprovecha 20% OFF en este complemento!',
-    name: 'SECADOR DE ROPA PORTATIL + 8 PERCHAS DE REGALO',
-    variantId: '355582153',
-    price: 54999,
-    discountPrice: 43999,
-    savings: 11000,
-    image: 'https://dcdn-us.mitiendanube.com/stores/007/961/682/products/principal-72554f7ba3ff08dce817842132500746-480-0.webp'
-  };
+  // Estado global de reglas
+  let activeRules = [];
+
+  // Consultar reglas activas desde la API del servidor
+  async function checkActiveRules() {
+    try {
+      const res = await fetch('https://upsell-gamma-bay.vercel.app/api/rules');
+      if (res.ok) {
+        const rules = await res.json();
+        activeRules = (rules || []).filter(r => r.active !== false);
+      }
+    } catch (e) {
+      // Fallback
+    }
+  }
+
+  checkActiveRules();
 
   function injectUpsellWidget() {
+    // Si no hay reglas activas en el dashboard, ELIMINAR WIDGET SI EXISTE Y NO MOSTRAR NADA
+    if (activeRules && activeRules.length === 0) {
+      const existing = document.getElementById('neohogar-upsell-container');
+      if (existing) existing.remove();
+      return;
+    }
+
     // Evitar duplicados si ya está inyectado
     if (document.getElementById('neohogar-upsell-container')) return;
+
+    // Oferta basada en Regla a+b: Secador de Ropa (20% OFF)
+    const OFFER_DATA = {
+      title: '🔥 OFERTA EXCLUSIVA DE CARRITO',
+      badgeText: '⚡ ¡Aprovecha 20% OFF en este complemento!',
+      name: 'SECADOR DE ROPA PORTATIL + 8 PERCHAS DE REGALO',
+      variantId: '355582153',
+      price: 54999,
+      discountPrice: 43999,
+      savings: 11000,
+      image: 'https://dcdn-us.mitiendanube.com/stores/007/961/682/products/principal-72554f7ba3ff08dce817842132500746-480-0.webp'
+    };
 
     // 1. Buscar el botón de checkout dentro del carrito desplegable
     let checkoutBtn = document.querySelector([
@@ -119,7 +144,7 @@ export default function handler(req, res) {
       btn.style.background = '#10b981';
       btn.disabled = true;
 
-      // Solicitud AJAX con el Variant ID real de Tiendanube (355582153)
+      // Solicitud AJAX sin recargar página
       const params = new URLSearchParams();
       params.append('add_to_cart', '355582153');
       params.append('quantity', '1');
@@ -133,25 +158,22 @@ export default function handler(req, res) {
         body: params
       })
       .then(function() {
-        btn.innerText = '✓ ¡AGREGADO!';
+        btn.innerText = '✓ ¡AGREGADO CON 20% OFF!';
         btn.style.background = '#059669';
-        setTimeout(function() {
-          if (window.LS && window.LS.cart && typeof window.LS.cart.update === 'function') {
-            window.LS.cart.update();
-          } else {
-            window.location.reload();
-          }
-        }, 400);
+        // Si el carrito de Tiendanube tiene update dinámico, lo dispara sin recargar la página entera
+        if (window.LS && window.LS.cart && typeof window.LS.cart.update === 'function') {
+          window.LS.cart.update();
+        }
       })
       .catch(function() {
         btn.innerText = '✓ ¡AGREGADO!';
-        window.location.reload();
+        btn.style.background = '#059669';
       });
     });
   }
 
-  // Monitoreo continuo cada 300ms para asegurar la inyección al abrir el carrito
-  setInterval(injectUpsellWidget, 300);
+  // Monitoreo continuo cada 400ms
+  setInterval(injectUpsellWidget, 400);
 })();
   `;
 
