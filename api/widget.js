@@ -20,11 +20,33 @@ export default function handler(req, res) {
     // Evitar duplicados si ya está inyectado
     if (document.getElementById('neohogar-upsell-container')) return;
 
-    // Buscar elementos clave del carrito en Neo Hogar
-    const cartHeader = document.querySelector('.cart-summary, #ajax-cart, .js-ajax-cart-container, .modal-cart, [data-modal-id="modal-cart"]');
-    const checkoutBtn = document.querySelector('a[href*="checkout"], input[name="checkout"], button.js-cart-checkout, .js-cart-checkout, form[action*="checkout"] input[type="submit"], form[action*="checkout"] button');
+    // Buscar elementos clave del carrito en temas de Tiendanube (Alma, Bahía, Simple, etc.)
+    let checkoutBtn = document.querySelector([
+      'a[href*="checkout"]',
+      'a[href*="iniciar-compra"]',
+      'input[name="checkout"]',
+      'button.js-cart-checkout',
+      '.js-cart-checkout',
+      '.js-ajax-cart-submit',
+      '.cart-btn-checkout',
+      'form[action*="checkout"] input[type="submit"]',
+      'form[action*="checkout"] button',
+      '[data-singlestep-checkout-btn]'
+    ].join(', '));
 
-    // Buscar el contenedor padre donde insertar la oferta
+    // Si no se encuentra por selector directo, buscar botón por texto ("INICIAR COMPRA" / "CHECKOUT")
+    if (!checkoutBtn) {
+      const allButtons = document.querySelectorAll('button, a, input[type="submit"], input[type="button"]');
+      for (const btn of allButtons) {
+        const text = (btn.innerText || btn.value || '').toUpperCase();
+        if (text.includes('INICIAR COMPRA') || text.includes('FINALIZAR COMPRA') || text.includes('CHECKOUT')) {
+          checkoutBtn = btn;
+          break;
+        }
+      }
+    }
+
+    const cartHeader = document.querySelector('.cart-summary, #ajax-cart, .js-ajax-cart-container, .js-ajax-cart-panel, .modal-cart, [data-modal-id="modal-cart"], .js-cart-container');
     const parentContainer = checkoutBtn ? checkoutBtn.parentElement : (cartHeader || document.body);
 
     if (!parentContainer) return;

@@ -110,6 +110,29 @@ app.get('/api/status', (req, res) => {
   });
 });
 
+// 3b. Script Tags API (Instalación Automática en Tienda Nube)
+app.post('/api/tiendanube/scripts', async (req, res) => {
+  try {
+    const scriptUrl = req.body?.scriptUrl || 'https://upsell-gamma-bay.vercel.app/api/widget.js';
+    const response = await fetch(`https://api.tiendanube.com/v1/${STORE_ID}/scripts`, {
+      method: 'POST',
+      headers: {
+        'Authentication': `bearer ${ACCESS_TOKEN}`,
+        'Content-Type': 'application/json',
+        'User-Agent': 'TnUpsell (37816)'
+      },
+      body: JSON.stringify({
+        src: scriptUrl,
+        event: 'onload'
+      })
+    });
+    const data = await response.json();
+    res.status(response.status).json({ success: response.ok, data });
+  } catch (error) {
+    res.status(500).json({ success: false, error: error.message });
+  }
+});
+
 // 4. Rules REST API
 app.get('/api/rules', (req, res) => res.json(rulesStore));
 
