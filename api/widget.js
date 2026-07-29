@@ -117,7 +117,17 @@ export default function handler(req, res) {
       btn.style.background = '#10b981';
       btn.disabled = true;
 
-      // Intentar agregar al carrito de Tiendanube
+      // Intentar agregar usando la librería cliente nativa de Tiendanube (LS.cart)
+      if (window.LS && window.LS.cart) {
+        try {
+          window.LS.cart.add({
+            variant_id: OFFER_DATA.variantId || '7961682',
+            quantity: 1
+          });
+        } catch(e) {}
+      }
+
+      // Solicitud AJAX fallback a Tiendanube
       fetch('/cart/add', {
         method: 'POST',
         headers: {
@@ -125,13 +135,21 @@ export default function handler(req, res) {
           'X-Requested-With': 'XMLHttpRequest'
         },
         body: new URLSearchParams({
-          'add_to_cart': '7961682',
+          'add_to_cart': OFFER_DATA.variantId || '7961682',
           'quantity': '1'
         })
       }).catch(err => console.log('Cart add notice:', err))
         .finally(() => {
-          btn.innerText = '¡AGREGADO!';
-          setTimeout(() => { window.location.reload(); }, 600);
+          btn.innerText = '✓ ¡AGREGADO!';
+          btn.style.background = '#059669';
+          // Refrescar carrito o notificación
+          setTimeout(() => {
+            if (window.LS && window.LS.cart && window.LS.cart.update) {
+              window.LS.cart.update();
+            } else {
+              window.location.reload();
+            }
+          }, 500);
         });
     });
   }
