@@ -23,12 +23,41 @@ export default async function handler(req, res) {
 
     if (tokenData.access_token) {
       const storeId = tokenData.user_id;
+      const accessToken = tokenData.access_token;
+
+      // Inyectar el script tag automáticamente en la tienda autorizada
+      let scriptStatus = 'Pendiente';
+      try {
+        const scriptRes = await fetch(`https://api.tiendanube.com/v1/${storeId}/scripts`, {
+          method: 'POST',
+          headers: {
+            'Authentication': `bearer ${accessToken}`,
+            'Content-Type': 'application/json',
+            'User-Agent': `TnUpsell (${appId})`
+          },
+          body: JSON.stringify({
+            src: 'https://upsell-gamma-bay.vercel.app/api/widget.js',
+            event: 'onload'
+          })
+        });
+        const scriptData = await scriptRes.json();
+        if (scriptRes.ok || scriptRes.status === 201) {
+          scriptStatus = '✅ Script inyectado con éxito en la tienda';
+        } else {
+          scriptStatus = `⚠️ Aviso API: ${JSON.stringify(scriptData)}`;
+        }
+      } catch (err) {
+        scriptStatus = `⚠️ Error al inyectar script: ${err.message}`;
+      }
 
       return res.send(`
-        <div style="font-family: sans-serif; text-align: center; padding: 40px; background: #0f172a; color: #fff; height: 100vh;">
+        <div style="font-family: sans-serif; text-align: center; padding: 40px; background: #0f172a; color: #fff; min-height: 100vh;">
           <h1 style="color: #34d399;">🎉 ¡Conexión Exitosa con Tienda Nube!</h1>
           <p>Tu tienda ID: <strong>${storeId}</strong> ha sido autorizada correctamente.</p>
-          <p style="color: #94a3b8; font-size: 14px;">Token generado: ${tokenData.access_token}</p>
+          <div style="margin: 20px auto; max-width: 500px; padding: 16px; background: #1e293b; border-radius: 12px; border: 1px solid #334155;">
+            <p style="color: #60a5fa; font-weight: bold;">Estado de Inyección de Script:</p>
+            <p style="color: #cbd5e1; font-size: 14px;">${scriptStatus}</p>
+          </div>
           <a href="/" style="display: inline-block; margin-top: 20px; padding: 12px 24px; background: #6366f1; color: #fff; text-decoration: none; border-radius: 8px; font-weight: bold;">
             Volver al Dashboard de Upsell
           </a>
