@@ -21,25 +21,25 @@ export default function handler(req, res) {
     // Evitar duplicados si ya está inyectado
     if (document.getElementById('neohogar-upsell-container')) return;
 
-    // Buscar elementos clave del carrito en temas de Tiendanube (Alma, Bahía, Simple, etc.)
+    // 1. Buscar el botón de checkout dentro del carrito desplegable
     let checkoutBtn = document.querySelector([
+      '#modal-cart a[href*="checkout"]',
+      '#modal-cart a[href*="iniciar-compra"]',
+      '#modal-cart .js-ajax-cart-submit',
+      '#modal-cart input[name="checkout"]',
+      '.js-ajax-cart-panel a[href*="checkout"]',
+      '.js-ajax-cart-panel .js-ajax-cart-submit',
+      '.js-ajax-cart-container a[href*="checkout"]',
+      '.modal-cart a[href*="checkout"]',
       'a[href*="checkout"]',
       'a[href*="iniciar-compra"]',
       'input[name="checkout"]',
-      'button.js-cart-checkout',
-      '.js-cart-checkout',
-      '.js-ajax-cart-submit',
-      '.cart-btn-checkout',
-      'form[action*="checkout"] input[type="submit"]',
-      'form[action*="checkout"] button',
-      '[data-singlestep-checkout-btn]',
-      '.cart-summary .btn',
-      '#ajax-cart .btn'
+      '.js-ajax-cart-submit'
     ].join(', '));
 
-    // Si no se encuentra por selector directo, buscar cualquier botón de checkout por texto
+    // Si no se encuentra por selector directo, buscar botón por texto ("INICIAR COMPRA" / "CHECKOUT")
     if (!checkoutBtn) {
-      const allButtons = document.querySelectorAll('button, a, input[type="submit"], input[type="button"]');
+      const allButtons = document.querySelectorAll('#modal-cart button, #modal-cart a, .js-ajax-cart-panel button, .js-ajax-cart-panel a, button, a, input[type="submit"]');
       for (const btn of allButtons) {
         const text = (btn.innerText || btn.value || '').toUpperCase();
         if (text.includes('INICIAR COMPRA') || text.includes('FINALIZAR COMPRA') || text.includes('CHECKOUT')) {
@@ -49,10 +49,11 @@ export default function handler(req, res) {
       }
     }
 
-    const cartHeader = document.querySelector('.cart-summary, #ajax-cart, .js-ajax-cart-container, .js-ajax-cart-panel, .modal-cart, [data-modal-id="modal-cart"], .js-cart-container, .modal-cart-body');
-    const parentContainer = checkoutBtn ? checkoutBtn.parentElement : (cartHeader || document.body);
+    // 2. Buscar el contenedor del panel/modal del carrito desplegable
+    const cartDrawer = document.querySelector('#modal-cart .modal-body, #modal-cart, .js-ajax-cart-panel, .js-ajax-cart-container, .modal-cart-body, #ajax-cart');
 
-    if (!parentContainer) return;
+    // SI NO HAY CARRITO DESPLEGABLE O EL CARRITO NO ESTÁ EN PANTALLA, NO INYECTAR EN HEADER
+    if (!checkoutBtn && !cartDrawer) return;
 
     // Crear el elemento del Widget de Upsell
     const widgetDiv = document.createElement('div');
@@ -69,6 +70,8 @@ export default function handler(req, res) {
       text-align: left;
       clear: both;
       z-index: 99999;
+      width: 100%;
+      box-sizing: border-box;
     \`;
 
     widgetDiv.innerHTML = \`
@@ -76,7 +79,7 @@ export default function handler(req, res) {
         <span>\${OFFER_DATA.badgeText}</span>
       </div>
       <div style="display: flex; align-items: center; gap: 10px;">
-        <img src="\${OFFER_DATA.image}" style="width: 50px; height: 50px; border-radius: 8px; object-fit: cover; border: 1px solid #6366f1;" />
+        <img src="\${OFFER_DATA.image}" style="width: 48px; height: 48px; border-radius: 8px; object-fit: cover; border: 1px solid #6366f1; shrink: 0;" />
         <div style="flex: 1; min-width: 0;">
           <div style="font-size: 11px; font-weight: 700; color: #f8fafc; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">\${OFFER_DATA.name}</div>
           <div style="font-size: 12px; font-weight: 800; color: #34d399; margin-top: 2px;">
@@ -95,6 +98,7 @@ export default function handler(req, res) {
           cursor: pointer;
           box-shadow: 0 4px 12px rgba(99, 102, 241, 0.4);
           transition: transform 0.15s ease;
+          white-space: nowrap;
         ">
           + AGREGAR OFF
         </button>
@@ -103,8 +107,8 @@ export default function handler(req, res) {
 
     if (checkoutBtn) {
       checkoutBtn.parentNode.insertBefore(widgetDiv, checkoutBtn);
-    } else {
-      parentContainer.appendChild(widgetDiv);
+    } else if (cartDrawer) {
+      cartDrawer.appendChild(widgetDiv);
     }
 
     document.getElementById('btn-add-neohogar-upsell')?.addEventListener('click', function() {
