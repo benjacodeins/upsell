@@ -47,10 +47,41 @@ app.get('/api/auth/callback', async (req, res) => {
 
       console.log(`✅ ¡Tienda vinculada con éxito! Store ID: ${STORE_ID}`);
 
+      // Registrar automáticamente el script tag en la tienda de Tiendanube
+      let scriptMsg = 'Inyectando script...';
+      try {
+        const scriptRes = await fetch(`https://api.tiendanube.com/v1/${STORE_ID}/scripts`, {
+          method: 'POST',
+          headers: {
+            'Authentication': `bearer ${ACCESS_TOKEN}`,
+            'Content-Type': 'application/json',
+            'User-Agent': `TnUpsell (${appId})`
+          },
+          body: JSON.stringify({
+            src: 'https://upsell-gamma-bay.vercel.app/api/widget.js',
+            event: 'onload'
+          })
+        });
+        const scriptData = await scriptRes.json();
+        if (scriptRes.ok || scriptRes.status === 201) {
+          scriptMsg = '✅ Script inyectado con éxito en la tienda real (ID: ' + STORE_ID + ')';
+          console.log('✅ Script Tag registrado en Tiendanube:', scriptData);
+        } else {
+          scriptMsg = '⚠️ Respuesta Tiendanube: ' + JSON.stringify(scriptData);
+          console.log('⚠️ Error registrando Script Tag:', scriptData);
+        }
+      } catch (err) {
+        scriptMsg = '⚠️ Error de conexión al inyectar script: ' + err.message;
+      }
+
       return res.send(`
-        <div style="font-family: sans-serif; text-align: center; padding: 40px; background: #0f172a; color: #fff; height: 100vh;">
+        <div style="font-family: sans-serif; text-align: center; padding: 40px; background: #0f172a; color: #fff; min-height: 100vh;">
           <h1 style="color: #34d399;">🎉 ¡Conexión Exitosa con Tienda Nube!</h1>
           <p>Tu tienda ID: <strong>${STORE_ID}</strong> ha sido autorizada correctamente.</p>
+          <div style="margin: 20px auto; max-width: 500px; padding: 16px; background: #1e293b; border-radius: 12px; border: 1px solid #334155;">
+            <p style="color: #60a5fa; font-weight: bold; margin-bottom: 8px;">Estado de Inyección de Script Tag:</p>
+            <p style="color: #34d399; font-weight: bold; font-size: 15px;">${scriptMsg}</p>
+          </div>
           <a href="http://localhost:3000" style="display: inline-block; margin-top: 20px; padding: 12px 24px; background: #6366f1; color: #fff; text-decoration: none; border-radius: 8px; font-weight: bold;">
             Volver al Dashboard de Upsell
           </a>
