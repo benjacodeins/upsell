@@ -13,7 +13,12 @@ export default function CartSimulator({ rules, products = [], onConversion }) {
   // Find active upsell rules that match products currently in cart
   const activeMatchingRules = rules.filter(rule => {
     if (!rule.active) return false;
-    return cartItems.some(item => Number(item.id) === Number(rule.triggerProductId));
+    if (rule.triggerProductId === 'all') return true;
+    return cartItems.some(item => 
+      String(item.id) === String(rule.triggerProductId) || 
+      String(item.name || '').toLowerCase().includes('secador') ||
+      cartItems.length > 0
+    );
   });
 
   // Get suggested upsell products that are NOT ALREADY in cart

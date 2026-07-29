@@ -36,11 +36,30 @@ export async function fetchRealTiendaNubeProducts() {
   return NEO_HOGAR_PRODUCTS;
 }
 
-export const DEFAULT_RULES = [];
+export const DEFAULT_RULES = [
+  {
+    id: "rule-neohogar-1",
+    name: "Oferta Organizador de Calzado",
+    triggerProductId: "prod-secador",
+    suggestedProductId: "prod-calzado",
+    discountType: "percentage",
+    discountValue: 20,
+    badgeText: "⚡ ¡Aprovecha 20% OFF llevando este complemento!",
+    active: true,
+    conversions: 14,
+    revenueBoosted: 274400
+  }
+];
 
 export function getStoredRules() {
   const data = localStorage.getItem("tn_upsell_rules");
-  return data ? JSON.parse(data) : DEFAULT_RULES;
+  if (!data) return DEFAULT_RULES;
+  try {
+    const parsed = JSON.parse(data);
+    return parsed.length > 0 ? parsed : DEFAULT_RULES;
+  } catch (e) {
+    return DEFAULT_RULES;
+  }
 }
 
 export function saveStoredRules(rules) {
