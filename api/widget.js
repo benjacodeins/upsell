@@ -11,6 +11,7 @@ export default function handler(req, res) {
     title: '🔥 OFERTA EXCLUSIVA DE CARRITO',
     badgeText: '⚡ ¡Aprovecha 20% OFF en este complemento!',
     name: 'SECADOR DE ROPA PORTATIL + 8 PERCHAS DE REGALO',
+    variantId: '355582153',
     price: 54999,
     discountPrice: 43999,
     savings: 11000,
@@ -79,7 +80,7 @@ export default function handler(req, res) {
         <span>\${OFFER_DATA.badgeText}</span>
       </div>
       <div style="display: flex; align-items: center; gap: 10px;">
-        <img src="\${OFFER_DATA.image}" style="width: 48px; height: 48px; border-radius: 8px; object-fit: cover; border: 1px solid #6366f1; shrink: 0;" />
+        <img src="\${OFFER_DATA.image}" style="width: 48px; height: 48px; border-radius: 8px; object-fit: cover; border: 1px solid #6366f1; flex-shrink: 0;" />
         <div style="flex: 1; min-width: 0;">
           <div style="font-size: 11px; font-weight: 700; color: #f8fafc; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">\${OFFER_DATA.name}</div>
           <div style="font-size: 12px; font-weight: 800; color: #34d399; margin-top: 2px;">
@@ -111,46 +112,41 @@ export default function handler(req, res) {
       cartDrawer.appendChild(widgetDiv);
     }
 
-    document.getElementById('btn-add-neohogar-upsell')?.addEventListener('click', function() {
+    document.getElementById('btn-add-neohogar-upsell')?.addEventListener('click', function(e) {
+      e.preventDefault();
       const btn = this;
       btn.innerText = '¡AGREGANDO...!';
       btn.style.background = '#10b981';
       btn.disabled = true;
 
-      // Intentar agregar usando la librería cliente nativa de Tiendanube (LS.cart)
-      if (window.LS && window.LS.cart) {
-        try {
-          window.LS.cart.add({
-            variant_id: OFFER_DATA.variantId || '7961682',
-            quantity: 1
-          });
-        } catch(e) {}
-      }
+      // Solicitud AJAX con el Variant ID real de Tiendanube (355582153)
+      const params = new URLSearchParams();
+      params.append('add_to_cart', '355582153');
+      params.append('quantity', '1');
 
-      // Solicitud AJAX fallback a Tiendanube
       fetch('/cart/add', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8',
           'X-Requested-With': 'XMLHttpRequest'
         },
-        body: new URLSearchParams({
-          'add_to_cart': OFFER_DATA.variantId || '7961682',
-          'quantity': '1'
-        })
-      }).catch(err => console.log('Cart add notice:', err))
-        .finally(() => {
-          btn.innerText = '✓ ¡AGREGADO!';
-          btn.style.background = '#059669';
-          // Refrescar carrito o notificación
-          setTimeout(() => {
-            if (window.LS && window.LS.cart && window.LS.cart.update) {
-              window.LS.cart.update();
-            } else {
-              window.location.reload();
-            }
-          }, 500);
-        });
+        body: params
+      })
+      .then(function() {
+        btn.innerText = '✓ ¡AGREGADO!';
+        btn.style.background = '#059669';
+        setTimeout(function() {
+          if (window.LS && window.LS.cart && typeof window.LS.cart.update === 'function') {
+            window.LS.cart.update();
+          } else {
+            window.location.reload();
+          }
+        }, 400);
+      })
+      .catch(function() {
+        btn.innerText = '✓ ¡AGREGADO!';
+        window.location.reload();
+      });
     });
   }
 
