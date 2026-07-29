@@ -2,19 +2,19 @@
 
 export const NEO_HOGAR_PRODUCTS = [
   {
-    id: 1,
+    id: "prod-secador",
     name: "SECADOR DE ROPA PORTATIL + 8 PERCHAS DE REGALO",
-    price: 45900,
+    price: 54999,
     category: "Hogar",
-    image: "https://images.unsplash.com/photo-1582735689369-4fe89db7114c?auto=format&fit=crop&w=400&q=80",
+    image: "https://dcdn-us.mitiendanube.com/stores/007/961/682/products/principal-72554f7ba3ff08dce817842132500746-480-0.webp",
     sku: "NEO-SEC-01"
   },
   {
-    id: 3,
+    id: "prod-calzado",
     name: "ORGANIZADOR DE CALZADO (10 NIVELES)",
     price: 24500,
     category: "Organización",
-    image: "https://images.unsplash.com/photo-1544816155-12df9643f363?auto=format&fit=crop&w=400&q=80",
+    image: "https://dcdn-us.mitiendanube.com/stores/007/961/682/products/chatgpt-image-24-jul-2026-02_15_30-86b3c39598501e726f17848701552063-480-0.webp",
     sku: "NEO-CALZ-03"
   }
 ];
