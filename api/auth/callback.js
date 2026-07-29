@@ -36,15 +36,16 @@ export default async function handler(req, res) {
             'User-Agent': `TnUpsell (${appId})`
           },
           body: JSON.stringify({
+            script_id: 8773,
             src: 'https://upsell-gamma-bay.vercel.app/api/widget.js',
             event: 'onload'
           })
         });
         const scriptData = await scriptRes.json();
         if (scriptRes.ok || scriptRes.status === 201) {
-          scriptStatus = '✅ Script inyectado con éxito en la tienda';
+          scriptStatus = '🎉 ¡SCRIPT INYECTADO CON ÉXITO EN TU TIENDA REAL! (ID: ' + storeId + ')';
         } else {
-          scriptStatus = `⚠️ Aviso API: ${JSON.stringify(scriptData)}`;
+          scriptStatus = `⚠️ Respuesta Tiendanube: ${JSON.stringify(scriptData)}`;
         }
       } catch (err) {
         scriptStatus = `⚠️ Error al inyectar script: ${err.message}`;
