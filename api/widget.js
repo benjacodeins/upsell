@@ -1,26 +1,27 @@
 export default function handler(req, res) {
   res.setHeader('Content-Type', 'application/javascript');
   res.setHeader('Access-Control-Allow-Origin', '*');
+  res.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate, max-age=0');
+  res.setHeader('Pragma', 'no-cache');
+  res.setHeader('Expires', '0');
 
   const scriptContent = `
 (function() {
   console.log('⚡ [Neo Hogar In-Cart Upsell Active] Store ID: 7961682');
 
-  // Estado global de reglas (por defecto activa)
-  let activeRules = [{ active: true }];
+  // Estado global de reglas
+  let activeRules = null;
 
-  // Consultar reglas activas desde la API del servidor
+  // Consultar reglas activas desde la API sin caché
   async function checkActiveRules() {
     try {
-      const res = await fetch('https://upsell-gamma-bay.vercel.app/api/rules');
+      const res = await fetch('https://upsell-gamma-bay.vercel.app/api/rules?t=' + Date.now(), { cache: 'no-store' });
       if (res.ok) {
         const rules = await res.json();
-        if (Array.isArray(rules) && rules.length > 0) {
-          activeRules = rules.filter(r => r.active !== false);
-        }
+        activeRules = (rules || []).filter(r => r.active !== false);
       }
     } catch (e) {
-      // Mantener activa
+      activeRules = [];
     }
   }
 
